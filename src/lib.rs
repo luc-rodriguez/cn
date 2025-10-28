@@ -1,5 +1,11 @@
 mod state;
 
+use winit::{
+    dpi::PhysicalSize,
+    event::{DeviceEvent, MouseButton, WindowEvent},
+    keyboard::{Key, KeyCode, PhysicalKey},
+};
+
 use crate::state::State;
 
 #[derive(Clone)]
