@@ -1,77 +1,103 @@
 mod state;
 
-use web_time::{Instant, Duration};
+use std::collections::HashMap;
 
 use winit::{
-    dpi::PhysicalSize,
-    event::{DeviceEvent, MouseButton, WindowEvent},
-    keyboard::{Key, KeyCode, PhysicalKey},
+    application::ApplicationHandler,
+    event::{DeviceEvent, DeviceId, StartCause, WindowEvent},
+    event_loop::ActiveEventLoop,
+    window::WindowId,
 };
 
-use crate::state::State;
+use crate::state::{State, Inputs};
 
-#[derive(Clone)]
-pub struct Cn {
-    state: Option<State>,
-
-    destroyed: bool,
-    closing: bool,
-
-    tick: Option<Instant>,
-    dt: Option<Duration>,
+pub struct Cn<App> {
+    pub app: App,
+    windows: HashMap<WindowId, State>,
 }
 
-impl Cn {
-    pub fn new() -> Self {
+impl<App> Cn<App> {
+    pub fn new(app: App) -> Self {
         Self {
-            state: Some(State::new()),
-            
-            closing: false,
-            
-            tick: None,
-            dt: None,
+            app,
+            windows: HashMap::new(),
         }
     }
+}
 
-    /// Call every time `ApplicationHandler.new_events()` is called.
-    /// Clears all internal state.
-    pub fn new_events(&mut self) {
-        self.closing = false;
+pub trait CnT {
+    fn update(&mut self, event_loop: &ActiveEventLoop, input: Inputs);
+}
 
-        self.tick.get_or_insert(Instant::now());
-        self.dt = None;
+impl<App, U> ApplicationHandler<U> for Cn<App>
+where
+    App: ApplicationHandler<U> + CnT,
+    U: 'static,
+{
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        self.app.resumed(event_loop);
+    }
 
-        if let Some(state) = &mut self.state {
-            state.new_events();
+    fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
+        self.app.new_events(event_loop, cause);
+    }
+
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        self.app.about_to_wait(event_loop);
+    }
+
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        window_id: WindowId,
+        event: WindowEvent,
+    ) {
+        if matches!(event, WindowEvent::Destroyed) {
+            self.windows.remove(&window_id);
         }
-    }
 
-    pub fn window_event(&mut self, event: &WindowEvent) -> bool {
-        let mut redraw_requested = false;
+        let state = self
+            .windows
+            .entry(window_id)
+            .or_insert_with(State::new);
 
-        match event {
-            WindowEvent::CloseRequested => self.closing = true,
-            WindowEvent::Destroyed => self.destroyed = true,
-            WindowEvent::Focused(false) => self.state = None,
-            WindowEvent::Focused(true) => {
-                if self.state.is_none() {
-                    self.state = Some(State::new());
-                }
-            }
-            // ...
-            WindowEvent::RedrawRequested => {
-                redraw_requested = true;
-            }
-            _ => {}
+        state.window_event(&event);
+
+        if matches!(event, WindowEvent::RedrawRequested) {
+            let input = state.new_events();
+
+            self.app.update(event_loop, input);
         }
 
-        redraw_requested
+        self.app.window_event(event_loop, window_id, event);
     }
 
-    pub fn about_to_wait(&mut self) {
-        self.dt = self.tick.map(|i| i.elapsed());
-        self.tick = Some(Instant::now());
+    fn device_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        device_id: DeviceId,
+        event: DeviceEvent,
+    ) {
+        for state in self.windows.values_mut() {
+            state.device_event(&event);
+        }
+
+        self.app.device_event(event_loop, device_id, event);
     }
 
-    
+    fn suspended(&mut self, event_loop: &ActiveEventLoop) {
+        self.app.suspended(event_loop);
+    }
+
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: U) {
+        self.app.user_event(event_loop, event);
+    }
+
+    fn exiting(&mut self, event_loop: &ActiveEventLoop) {
+        self.app.exiting(event_loop);
+    }
+
+    fn memory_warning(&mut self, event_loop: &ActiveEventLoop) {
+        self.app.memory_warning(event_loop);
+    }
 }
