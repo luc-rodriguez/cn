@@ -37,4 +37,9 @@ impl State {
             keys_held: vec![],
         }
     }
+
+    pub fn new_events(&mut self) {
+        self.mouse_actions.clear();
+        self.key_actions.clear();
+    }
 }

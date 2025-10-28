@@ -1,6 +1,6 @@
 [package]
 name = "cn"
-version = "0.0.1-dev"
+version = "0.0.2-dev"
 edition = "2024"
 description = "An input helper built for winit 🕹️"
 repository = "https://gitlab.com/luc-rodriguez/cn"
@@ -10,3 +10,4 @@ categories = ["game-engines", "os", "gui"]
 
 [dependencies]
 winit = { version = "0.30", default-features = false }
+web-time = "1.1"
