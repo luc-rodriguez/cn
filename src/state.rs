@@ -9,6 +9,7 @@ pub struct Inputs<'a> {
     pub size: Option<PhysicalSize<u32>>,
     pub scale_factor: Option<f64>,
     pub close_requested: bool,
+    pub delta_time: f32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -255,6 +256,7 @@ impl State {
             size: self.size,
             scale_factor: self.scale_factor,
             close_requested: self.close_requested,
+            delta_time: self.dt.unwrap().as_secs_f32(),
         };
 
         self.from = self.to;

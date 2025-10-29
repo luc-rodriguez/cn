@@ -26,14 +26,14 @@ impl<App> Cn<App> {
     }
 }
 
-pub trait CnT {
-    fn update(&mut self, event_loop: &ActiveEventLoop, input: Inputs);
+pub trait Tu {
+    fn iter(&mut self, event_loop: &ActiveEventLoop, input: Inputs);
 }
 
-impl<App, U> ApplicationHandler<U> for Cn<App>
+impl<App, T> ApplicationHandler<T> for Cn<App>
 where
-    App: ApplicationHandler<U> + CnT,
-    U: 'static,
+    App: ApplicationHandler<T> + Tu,
+    T: 'static,
 {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         self.app.resumed(event_loop);
@@ -44,7 +44,10 @@ where
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-        self.windows.values_mut().for_each(|s| s.about_to_wait());
+        self
+            .windows
+            .values_mut()
+            .for_each(|s| s.about_to_wait());
 
         self.app.about_to_wait(event_loop);
     }
@@ -69,7 +72,7 @@ where
         if matches!(event, WindowEvent::RedrawRequested) {
             let input = state.new_events();
 
-            self.app.update(event_loop, input);
+            self.app.iter(event_loop, input);
         }
 
         self.app.window_event(event_loop, window_id, event);
@@ -81,9 +84,10 @@ where
         device_id: DeviceId,
         event: DeviceEvent,
     ) {
-        for state in self.windows.values_mut() {
-            state.device_event(&event);
-        }
+        self
+            .windows
+            .values_mut()
+            .for_each(|s| s.device_event(&event));
 
         self.app.device_event(event_loop, device_id, event);
     }
@@ -92,7 +96,7 @@ where
         self.app.suspended(event_loop);
     }
 
-    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: U) {
+    fn user_event(&mut self, event_loop: &ActiveEventLoop, event: T) {
         self.app.user_event(event_loop, event);
     }
 
