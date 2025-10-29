@@ -9,7 +9,8 @@ use winit::{
     window::WindowId,
 };
 
-use crate::state::{State, Inputs};
+use crate::state::State;
+pub use state::Inputs;
 
 pub struct Cn<App> {
     pub app: App,
