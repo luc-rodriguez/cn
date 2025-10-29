@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use winit::{dpi::{PhysicalPosition, PhysicalSize}, event::{DeviceEvent, ElementState, KeyEvent, MouseButton, MouseScrollDelta, WindowEvent}, keyboard::{Key, KeyCode, NativeKeyCode, PhysicalKey}};
+use web_time::{Instant, Duration};
 
 pub struct Inputs<'a> {
     pub mouse: Mouse<'a>,
@@ -132,6 +133,9 @@ pub struct State {
     scale_factor: Option<f64>,
 
     close_requested: bool,
+
+    tick: Option<Instant>,
+    dt: Option<Duration>,
 }
 
 impl State {
@@ -154,6 +158,9 @@ impl State {
             scale_factor: None,
 
             close_requested: false,
+
+            tick: None,
+            dt: None,
         }
     }
 
@@ -228,7 +235,7 @@ impl State {
         }
     }
 
-    pub fn new_events(&mut self) -> Inputs {
+    pub fn new_events(&'_ mut self) -> Inputs<'_> {
         let velocity = (self.to.x - self.from.x, self.to.y - self.from.y);
 
         let inputs = Inputs {
@@ -258,7 +265,14 @@ impl State {
         self.size = None;
         self.scale_factor = None;
         self.close_requested = false;
+        self.tick.get_or_insert(Instant::now());
+        self.dt = None;
 
         inputs
+    }
+
+    pub fn about_to_wait(&mut self) {
+        self.dt = self.tick.map(|s| s.elapsed());
+        self.tick = Some(Instant::now());
     }
 }

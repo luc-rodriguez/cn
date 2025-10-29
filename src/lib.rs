@@ -43,6 +43,8 @@ where
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        self.windows.values_mut().for_each(|s| s.about_to_wait());
+
         self.app.about_to_wait(event_loop);
     }
 
