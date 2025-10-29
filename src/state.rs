@@ -256,7 +256,7 @@ impl State {
             size: self.size,
             scale_factor: self.scale_factor,
             close_requested: self.close_requested,
-            delta_time: self.dt.unwrap().as_secs_f32(),
+            delta_time: self.dt.map_or(0.0, |d| d.as_secs_f32()),
         };
 
         self.from = self.to;
