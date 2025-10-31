@@ -2,7 +2,7 @@
 name = "cn"
 version = "0.1.4"
 edition = "2024"
-description = "Advanced windowing for game engines 💥"
+description = "Windowing for game engines! 💥"
 repository = "https://github.com/luc-rodriguez/cn"
 license = "MIT OR Apache-2.0"
 keywords = ["winit", "input", "state", "cache"]
