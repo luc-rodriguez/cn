@@ -2,12 +2,13 @@
 name = "cn"
 version = "0.1.4"
 edition = "2024"
-description = "An input helper built for winit 🕹️"
-repository = "https://gitlab.com/luc-rodriguez/cn"
-license = "MIT or Apache-2.0"
+description = "Advanced windowing for game engines 🚀"
+repository = "https://github.com/luc-rodriguez/cn"
+license = "MIT OR Apache-2.0"
 keywords = ["winit", "input", "state", "cache"]
 categories = ["game-engines", "os", "gui"]
 
 [dependencies]
 winit = { version = "0.30", default-features = false }
+gilrs = "0.11"
 web-time = "1.1"
